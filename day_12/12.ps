@@ -1,0 +1,120 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 24 24 571 818
+%%Title: Advent of Code 2025 - day 12
+%%For: Hackvalue
+%%Creator: Anders Piniesjö
+%%CreationDate: Mon Dec 13 22:47:41 2025
+%%Orientation: Portrait
+%%DocumentMedia: A4 595 842 0 () ()
+%%EndComments
+
+% -----------------------------------------------------------------------
+%  Advent of Code 2025 in Postscript - Day 12
+%  by Anders Piniesjö
+%
+%  Run with: ghostscript 11.ps
+%  
+%  -- Or print it on a Postscript printer!
+% -----------------------------------------------------------------------
+
+%% ----- Data -------
+
+/test_data <<
+>> def
+
+/input_data <<
+% <<INJECT DATA HERE>>
+>> def
+
+%% ----- Output -------
+
+/setup_output
+{
+   /stdout (%stdout) (w) file def
+   /print { stdout exch writestring } bind def
+   /println { print stdout (\n) writestring } bind def
+
+   /LM   50 def      % Left margin
+   /RM   578 def     % Right margin
+   /TM   700 def     % Top margin
+   /BM   10 def      % Bottom margin
+   /fontsize 18 def  % Change this to change font-size
+   /ypos TM def      % current y-position
+   /lineheight fontsize def
+
+   /font_normal /Times-Roman findfont fontsize scalefont def
+   /font_bold /Times-Bold findfont fontsize scalefont def
+   font_normal setfont
+} def
+
+/newline
+ { currentpoint exch pop lineheight sub  % calc y-val
+   BM lt                                 % check if less than bottom margin
+   { showpage LM TM moveto               % New page
+     /ypos TM def }
+   { ypos lineheight sub                 % Go left/down
+     /ypos exch def
+     LM ypos moveto } ifelse
+} def
+   
+/prtstr
+ { dup stringwidth pop      % calc length of string
+   currentpoint pop         % get horizontal position
+   add RM gt                % sum > right margin?
+   {newline} if             % if so, next line
+   show 
+} def
+
+/setnormal { font_normal setfont } bind def
+/setbold { font_bold setfont } bind def
+
+%% ---- Utils ------
+
+/min  %% int int -- int   | Return min of two ints
+{
+   2 copy gt { exch pop } { pop } ifelse
+} bind def
+
+/max  %% int int -- int   | Return max of two ints
+{
+   2 copy lt { exch pop } { pop } ifelse
+} bind def
+
+/append   %% array elem -- array with elem   | Append elem to array, returning a new array with result.
+{
+   1 index length dup 1 add array   % Create new larger array.
+   dup 0 6 -1 roll putinterval      % Copy old array into new.
+   dup 4 -2 roll                    % Duplicate array and stack roll.
+   exch put                         % Put element to end.
+} bind def
+
+
+%% --- Step 1 ----------
+
+%% --- Step 2 ----------
+
+
+%% ------------------------------
+
+setup_output
+
+% input_data (you) s1:init
+% s1:iterate
+% /result_step_1 memory (you) get def
+
+% input_data (svr) s2:init
+% s2:iterate
+% /result_step_2 s2:result def
+
+
+% Output to paper
+LM TM moveto
+setbold (Advent of Code 2025) prtstr setnormal newline newline
+(- Day 12 -) prtstr 1 1 6 { pop newline } for
+% setbold (Result step 1: ) prtstr setnormal result_step_1 100 string cvs prtstr newline newline
+% setbold (Result step 2: ) prtstr setnormal result_step_2 100 string cvs prtstr newline
+
+% Write to stdout as well
+(\nAdvent of Code 2025  - Day 12 - Anders Piniesjö\n) println 
+% (Result step 1: ) print result_step_1 20 string cvs println
+% (Result step 2: ) print result_step_2 20 string cvs println
