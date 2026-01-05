@@ -8,23 +8,78 @@
 %%DocumentMedia: A4 595 842 0 () ()
 %%EndComments
 
-% -----------------------------------------------------------------------
+% --------------------------------------------------------------------------
 %  Advent of Code 2025 in Postscript - Day 12
 %  by Anders Piniesjö
 %
-%  Run with: ghostscript 11.ps
+%  Since the Advent of Code author wants no personal data to be included
+%  on GitHub, all input data is injected by the use of 'inject_data.py'.
+%  This means that your 'input.txt' should be placed in the same directory
+%  as this file and then the inject can be done by a simple 'make':
+%
+%     $ make
 %  
-%  -- Or print it on a Postscript printer!
-% -----------------------------------------------------------------------
+%  To run with GhostScript, with injected data: 
+%
+%     $ make run
+%
+%  To print on a PostScript printer: 
+%  Send the injected file to the printer: 12_injected.ps
+% --------------------------------------------------------------------------
 
 %% ----- Data -------
 
-/test_data <<
+/test_data_shapes <<
+0 [
+(###)
+(##.)
+(##.)
+]
+
+1 [
+(###)
+(##.)
+(.##)
+]
+
+2 [
+(.##)
+(###)
+(##.)
+]
+
+3 [
+(##.)
+(###)
+(##.)
+]
+
+4 [
+(###)
+(#..)
+(###)
+]
+
+5 [
+(###)
+(.#.)
+(###)
+]
 >> def
 
-/input_data <<
-% <<INJECT DATA HERE>>
+/test_data_regions [
+[[4 4] [0 0 0 0 2 0]]
+[[12 5] [1 0 1 0 2 2]]
+[[12 5] [1 0 1 0 3 2]]
+] def
+
+/input_data_shapes <<
+% <<INJECT SHAPES DATA HERE>>
 >> def
+
+/input_data_regions [
+% <<INJECT REGIONS DATA HERE>>
+] def
 
 %% ----- Output -------
 
