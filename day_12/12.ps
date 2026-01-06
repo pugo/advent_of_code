@@ -18,12 +18,12 @@
 %  as this file and then the inject can be done by a simple 'make':
 %
 %     $ make
-%  
-%  To run with GhostScript, with injected data: 
+%
+%  To run with GhostScript, with injected data:
 %
 %     $ make run
 %
-%  To print on a PostScript printer: 
+%  To print on a PostScript printer:
 %  Send the injected file to the printer: 12_injected.ps
 % --------------------------------------------------------------------------
 
@@ -111,13 +111,13 @@
      /ypos exch def
      LM ypos moveto } ifelse
 } def
-   
+
 /prtstr
  { dup stringwidth pop      % calc length of string
    currentpoint pop         % get horizontal position
    add RM gt                % sum > right margin?
    {newline} if             % if so, next line
-   show 
+   show
 } def
 
 /setnormal { font_normal setfont } bind def
@@ -195,6 +195,18 @@
 } bind def
 
 
+/nodes.inc_column_size     %% column_id --   | Increase given column header size (S) with 1.
+{
+   nodes exch get dup /S get 1 add /S exch put
+} bind def
+
+
+/nodes.dec_column_size     %% column_id --   | Decrease given column header size (S) with 1.
+{
+   nodes exch get dup /S get 1 sub /S exch put
+} bind def
+
+
 /nodes.add_row    % columns-array --  | Add a new row with specified columns.
 {
    /columns exch def
@@ -202,6 +214,7 @@
 
    /added_ids [] def
 
+   % Add nodes for row and link then vertically in columns.
    columns
    {
       /column_id exch def
@@ -220,12 +233,13 @@
 
       above_node /D nodes.insert_id put   % Point above.down to this.
       column_node /U nodes.insert_id put  % Point head.up to this.
+      column_id nodes.inc_column_size
 
       /added_ids added_ids nodes.insert_id append def    % Keep track of added ID
       /nodes.insert_id nodes.insert_id 1 add def
    } forall
 
-   % Link horizontally
+   % Link new nodes horizontally.
    /prev_id added_ids dup length 1 sub get def
    added_ids
    {
@@ -237,6 +251,85 @@
    } forall
 } bind def
 
+
+/nodes.cover    % column_index --  | Cover column (unlink column head and unlink all rows horizontally)
+{
+   /column_id exch def
+
+   % Unlink column header horizontally.
+   /column_node nodes column_id get def
+   /l column_node /L get def
+   /r column_node /R get def
+
+   nodes l get /R r put
+   nodes r get /L l put
+
+   % Iterate over all rows in column (all nodes), downwards.
+   /cy column_node /D get def       % cy = column_header.down
+   {
+      cy column_id eq { exit } if   % Reached column head, stop.
+
+      /row_node nodes cy get def    % Row node
+
+      /cx row_node /R get def       % Go right
+      {
+         cx cy eq { exit } if       % Break inner loop when we are back ar column.
+
+         /h_node nodes cx get def   % Horizontal node
+         /u h_node /U get def
+         /d h_node /D get def
+
+         nodes u get /D d put       % Link above.down = below
+         nodes d get /U u put       % Link below.up = above
+
+         h_node /C get nodes.dec_column_size
+
+         /cx h_node /R get def      % Set cx to next node right.
+      } loop
+
+      /cy row_node /D get def       % Set cy to next node below.
+   } loop
+} bind def
+
+
+/nodes.uncover    % column_index --  | Uncover column (relink all rows horizontally and relink coiumn header)
+{
+   /column_id exch def
+   /column_node nodes column_id get def
+
+   % Iterate over all rows in column (all nodes), upwards (reverse).
+   /cy column_node /U get def       % cy = column_header.up
+   {
+      cy column_id eq { exit } if   % Reached column head, stop.
+
+      /row_node nodes cy get def    % Row node
+
+      /cx row_node /L get def       % Go left (reverse)
+      {
+         cx cy eq { exit } if       % Break inner loop when we are back ar column.
+
+         /h_node nodes cx get def   % Horizontal node
+         /u h_node /U get def
+         /d h_node /D get def
+
+         nodes u get /D cx put       % Relink above.down = cx
+         nodes d get /U cx put       % Relink below.up = cx
+
+         h_node /C get nodes.inc_column_size
+
+         /cx h_node /L get def      % Set cx to next node left.
+      } loop
+
+      /cy row_node /U get def       % Set cy to next node above.
+   } loop
+
+   % Relink column header horizontally.
+   /l column_node /L get def
+   /r column_node /R get def
+
+   nodes l get /R column_id put
+   nodes r get /L column_id put
+} bind def
 
 
 /nodes_print
@@ -270,9 +363,21 @@ setup_output
 
 4 2 nodes.init
 nodes_print
+
+(----------------------------) =
 [1 3 4] nodes.add_row
 nodes_print
+
+(----------------------------) =
 [2 3 4] nodes.add_row
+nodes_print
+
+(--- Cover ------------------) =
+3 nodes.cover
+nodes_print
+
+(--- Uncover ------------------) =
+3 nodes.uncover
 nodes_print
 
 
@@ -293,6 +398,6 @@ setbold (Advent of Code 2025) prtstr setnormal newline newline
 % setbold (Result step 2: ) prtstr setnormal result_step_2 100 string cvs prtstr newline
 
 % Write to stdout as well
-(\nAdvent of Code 2025  - Day 12 - Anders Piniesjö\n) println 
+(\nAdvent of Code 2025  - Day 12 - Anders Piniesjö\n) println
 % (Result step 1: ) print result_step_1 20 string cvs println
 % (Result step 2: ) print result_step_2 20 string cvs println
