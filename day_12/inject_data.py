@@ -54,7 +54,6 @@ class Injector(data_injector.DataInjector):
 
             p = l.split(':')
             w, l = p[0].split('x')
-            print(p, w, l)
 
             line.append(f'[[{w} {l}] [{p[1].strip()}]]')
             if len(line) == items_per_line:

@@ -146,12 +146,135 @@
 
 %% --- Step 1 ----------
 
+% Nodes: data structure for Donld Knuth's DLX.
+
+/nodes.init    %% width height --
+{
+   /nodes.height exch def
+   /nodes.width exch def
+
+   % All nodes stored in an array with dicts.
+   /nodes 20 array def
+
+   % Create header node.
+   /nodes.HEAD_ID 0 def
+   nodes nodes.HEAD_ID <<
+      /L nodes.HEAD_ID /R nodes.HEAD_ID /U nodes.HEAD_ID /D nodes.HEAD_ID
+   >> put
+
+   % Enumerate nodes from 1 and up.
+   /nodes.insert_id 1 def
+
+   nodes.width nodes.create_column_headers
+} bind def
+
+
+/nodes.create_column_headers     %% width --
+{
+   /prev_col nodes.HEAD_ID def
+
+   1 1 3 -1 roll
+   {
+      /col exch def
+
+      nodes col <<
+      /L prev_col
+      /R nodes.HEAD_ID     % No known right index. Updated below, but OK for last.
+      /U col
+      /D col
+      /C col
+      /S 0
+      >> put
+
+      nodes prev_col get /R col put  % Point prev.right to new
+      /prev_col col def
+   } for
+
+   nodes nodes.HEAD_ID get /L col put  % Point head left to last
+   /nodes.insert_id col 1 add def
+} bind def
+
+
+/nodes.add_row    % columns-array --  | Add a new row with specified columns.
+{
+   /columns exch def
+   /first_id nodes.insert_id def
+
+   /added_ids [] def
+
+   columns
+   {
+      /column_id exch def
+
+      /column_node nodes column_id get def
+      /above_node_id column_node /U get def
+      /above_node nodes above_node_id get def
+
+      nodes nodes.insert_id
+      <<
+         /L 0 /R 0
+         /U above_node_id
+         /D column_id
+         /C column_id
+      >> put
+
+      above_node /D nodes.insert_id put   % Point above.down to this.
+      column_node /U nodes.insert_id put  % Point head.up to this.
+
+      /added_ids added_ids nodes.insert_id append def    % Keep track of added ID
+      /nodes.insert_id nodes.insert_id 1 add def
+   } forall
+
+   % Link horizontally
+   /prev_id added_ids dup length 1 sub get def
+   added_ids
+   {
+      /id exch def
+      /node nodes id get def
+      node /L prev_id put
+      nodes prev_id get /R id put
+      /prev_id id def
+   } forall
+} bind def
+
+
+
+/nodes_print
+{
+   /i 0 def
+   nodes
+   {
+      dup null eq
+      {
+         pop exit
+      }
+      {
+         {
+            exch
+            ([) print i 10 string cvs print (]  ) print
+            (key: ) print 10 string cvs print (, value: ) print 10 string cvs println
+         } forall
+      } ifelse
+      /i i 1 add def
+   } forall
+} bind def
+
+
+
 %% --- Step 2 ----------
 
 
 %% ------------------------------
 
 setup_output
+
+4 2 nodes.init
+nodes_print
+[1 3 4] nodes.add_row
+nodes_print
+[2 3 4] nodes.add_row
+nodes_print
+
 
 % input_data (you) s1:init
 % s1:iterate
