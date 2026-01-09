@@ -154,7 +154,7 @@
    /nodes.width exch def
 
    % All nodes stored in an array with dicts.
-   /nodes 20 array def
+   /nodes 100 array def
 
    % Create header node.
    /nodes.HEAD_ID 0 def
@@ -162,10 +162,20 @@
       /L nodes.HEAD_ID /R nodes.HEAD_ID /U nodes.HEAD_ID /D nodes.HEAD_ID
    >> put
 
+   /nodes.row_id 0 def
+
    % Enumerate nodes from 1 and up.
    /nodes.insert_id 1 def
 
    nodes.width nodes.create_column_headers
+
+   % Use an iterative approach instead of recursion, just as day 11.
+   % (Recursion exists in PS, but it is crippled by lack of scopes.)
+   /nodes.workarray 1000 array def
+   /nodes.workarray_index -1 def
+
+   /nodes.solution 100 array def
+
 } bind def
 
 
@@ -211,6 +221,7 @@
 {
    /columns exch def
    /first_id nodes.insert_id def
+   /nodes.row_id nodes.row_id 1 add def
 
    /added_ids [] def
 
@@ -229,6 +240,7 @@
          /U above_node_id
          /D column_id
          /C column_id
+         /RID nodes.row_id
       >> put
 
       above_node /D nodes.insert_id put   % Point above.down to this.
@@ -252,17 +264,40 @@
 } bind def
 
 
+/nodes.push_state  %% column next_row chosen_row --  | Push state to workarray
+{
+   /p_chosen_row exch def
+   /p_next_row exch def
+   /p_column exch def
+   
+   <<
+      /column p_column
+      /next_row p_next_row
+      /chosen_row p_chosen_row
+   >>
+
+   /nodes.workarray_index nodes.workarray_index 1 add def
+   nodes.workarray nodes.workarray_index 3 -1 roll put
+} bind def
+
+
+/nodes.pop_state  %% --   | Pop current state from workarray
+{
+   /nodes.workarray_index nodes.workarray_index 1 sub def
+} bind def
+
+
 /nodes.cover    % column_index --  | Cover column (unlink column head and unlink all rows horizontally)
 {
    /column_id exch def
 
    % Unlink column header horizontally.
    /column_node nodes column_id get def
-   /l column_node /L get def
-   /r column_node /R get def
+   /cl column_node /L get def
+   /cr column_node /R get def
 
-   nodes l get /R r put
-   nodes r get /L l put
+   nodes cl get /R cr put
+   nodes cr get /L cl put
 
    % Iterate over all rows in column (all nodes), downwards.
    /cy column_node /D get def       % cy = column_header.down
@@ -276,11 +311,11 @@
          cx cy eq { exit } if       % Break inner loop when we are back ar column.
 
          /h_node nodes cx get def   % Horizontal node
-         /u h_node /U get def
-         /d h_node /D get def
+         /cu h_node /U get def
+         /cd h_node /D get def
 
-         nodes u get /D d put       % Link above.down = below
-         nodes d get /U u put       % Link below.up = above
+         nodes cu get /D cd put       % Link above.down = below
+         nodes cd get /U cu put       % Link below.up = above
 
          h_node /C get nodes.dec_column_size
 
@@ -309,11 +344,11 @@
          cx cy eq { exit } if       % Break inner loop when we are back ar column.
 
          /h_node nodes cx get def   % Horizontal node
-         /u h_node /U get def
-         /d h_node /D get def
+         /cu h_node /U get def
+         /cd h_node /D get def
 
-         nodes u get /D cx put       % Relink above.down = cx
-         nodes d get /U cx put       % Relink below.up = cx
+         nodes cu get /D cx put       % Relink above.down = cx
+         nodes cd get /U cx put       % Relink below.up = cx
 
          h_node /C get nodes.inc_column_size
 
@@ -324,15 +359,37 @@
    } loop
 
    % Relink column header horizontally.
-   /l column_node /L get def
-   /r column_node /R get def
+   /cl column_node /L get def
+   /cr column_node /R get def
 
-   nodes l get /R column_id put
-   nodes r get /L column_id put
+   nodes cl get /R column_id put
+   nodes cr get /L column_id put
 } bind def
 
 
-/nodes_print
+/nodes.choose_column   %% -- column_id | Find column with smallest size
+{
+   /best_col -1 def
+   /best_size 1000000 def
+
+   /c nodes nodes.HEAD_ID get /R get def
+   {
+      c nodes.HEAD_ID eq { exit } if
+
+      /c_node nodes c get def
+      c_node /S get best_size lt
+      {
+         /best_col c def               % Found smaller, update best_col
+         /best_size c_node /S get def
+      } if
+
+      /c c_node /R get def
+   } loop
+
+   best_col
+} bind def
+
+/nodes.print
 {
    /i 0 def
    nodes
@@ -353,6 +410,91 @@
 } bind def
 
 
+/nodes.search  %% -  | DLX search iteratively. Store result in nodes.solution.
+{
+   /found_solution false def
+   /k 0 def
+
+   % Find start column.
+   /c nodes.choose_column def  % initial column
+   c nodes.cover
+
+   % Push initial state (column) to workarray.
+   c nodes c get /D get 0 nodes.push_state
+
+   /guard 0 def
+   {
+      nodes.workarray_index -1 eq { exit } if    % Break when work stack is empty.
+      found_solution { exit } if
+
+      /frame nodes.workarray nodes.workarray_index get def
+      /c frame /column get def
+
+      % If returning from child, undo chosen row.
+      frame /chosen_row get 0 ne
+      {
+         /r frame /chosen_row get def
+         frame /chosen_row 0 put
+
+         /x nodes r get /L get def
+         {
+            x r eq { exit } if
+            nodes x get /C get nodes.uncover
+            /x nodes x get /L get def
+         } loop
+      } if
+
+      % Try next row in selected column.
+      /r frame /next_row get def
+
+      r c eq   % Reached header?
+      {
+         % No more rows. Backtrack from column.
+         c nodes.uncover
+         nodes.pop_state
+         /k k 1 sub def
+      }
+      {
+         % Advance iterator to next row.
+         frame /next_row nodes r get /D get put
+
+         frame /chosen_row r put
+         nodes.solution nodes.workarray_index nodes r get /RID get put
+
+         % Cover other columns in row.
+         /guard2 0 def
+         /x nodes r get /R get def
+         {
+            x r eq { exit } if
+            nodes x get /C get nodes.cover
+            /x nodes x get /R get def
+
+            /guard2 guard2 1 add def
+            guard2 1000 gt { (HANG in column loop!) = quit } if
+         } loop
+
+         nodes nodes.HEAD_ID get /R get nodes.HEAD_ID eq  % Head.R points to head.
+         {
+            /found_solution true def
+         }
+         {
+            % Descend ("recurse").
+            /c2 nodes.choose_column def
+            c2 nodes.cover
+            c2 nodes c2 get /D get 0 nodes.push_state
+            /k k 1 add def           
+         } ifelse
+      } ifelse
+
+      /guard guard 1 add def
+      guard 1000 gt { (HANG in row loop!) = quit } if
+   } loop
+
+} bind def
+
+
+
+%-----------------------------------------------------
 
 %% --- Step 2 ----------
 
@@ -361,25 +503,20 @@
 
 setup_output
 
-4 2 nodes.init
-nodes_print
+7 6 nodes.init
 
-(----------------------------) =
-[1 3 4] nodes.add_row
-nodes_print
+[3 5 6] nodes.add_row
+[1 4 7] nodes.add_row
+[2 3 6] nodes.add_row
+[1 4] nodes.add_row
+[2 7] nodes.add_row
+[4 5 7] nodes.add_row
 
-(----------------------------) =
-[2 3 4] nodes.add_row
-nodes_print
+nodes.print
 
-(--- Cover ------------------) =
-3 nodes.cover
-nodes_print
 
-(--- Uncover ------------------) =
-3 nodes.uncover
-nodes_print
-
+nodes.search
+nodes.solution ==
 
 % input_data (you) s1:init
 % s1:iterate
