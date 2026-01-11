@@ -1,0 +1,460 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 24 24 571 818
+%%Title: Advent of Code 2025 - day 12
+%%For: Hackvalue
+%%Creator: Anders Piniesjö
+%%CreationDate: Mon Dec 13 22:47:41 2025
+%%Orientation: Portrait
+%%DocumentMedia: A4 595 842 0 () ()
+%%EndComments
+
+% --------------------------------------------------------------------------
+%  Advent of Code 2025 in Postscript - DLX
+%  by Anders Piniesjö
+%
+%  This file is not really part of the real Day 12 solution. When thinking
+%  about day 12 I realized I had never implemented the Donald Knuth
+%  Dancing Links (DLX). I did that just for fun.
+%
+%  It will not be useful in full for the real day 12 solution, since the
+%  number of rows in the DLX set-up would be enourmous with the large number
+%  of each shape. But I might use the cover and uncover in day 12,
+%  because it is a good way to keep track of changes and roll back.
+% --------------------------------------------------------------------------
+
+%% ----- Output -------
+
+/setup_output
+{
+   /stdout (%stdout) (w) file def
+   /print { stdout exch writestring } bind def
+   /println { print stdout (\n) writestring } bind def
+
+   /LM   50 def      % Left margin
+   /RM   578 def     % Right margin
+   /TM   700 def     % Top margin
+   /BM   10 def      % Bottom margin
+   /fontsize 18 def  % Change this to change font-size
+   /ypos TM def      % current y-position
+   /lineheight fontsize def
+
+   /font_normal /Times-Roman findfont fontsize scalefont def
+   /font_bold /Times-Bold findfont fontsize scalefont def
+   font_normal setfont
+} def
+
+/newline
+ { currentpoint exch pop lineheight sub  % calc y-val
+   BM lt                                 % check if less than bottom margin
+   { showpage LM TM moveto               % New page
+     /ypos TM def }
+   { ypos lineheight sub                 % Go left/down
+     /ypos exch def
+     LM ypos moveto } ifelse
+} def
+
+/prtstr
+ { dup stringwidth pop      % calc length of string
+   currentpoint pop         % get horizontal position
+   add RM gt                % sum > right margin?
+   {newline} if             % if so, next line
+   show
+} def
+
+/setnormal { font_normal setfont } bind def
+/setbold { font_bold setfont } bind def
+
+%% ---- Utils ------
+
+/min  %% int int -- int   | Return min of two ints
+{
+   2 copy gt { exch pop } { pop } ifelse
+} bind def
+
+/max  %% int int -- int   | Return max of two ints
+{
+   2 copy lt { exch pop } { pop } ifelse
+} bind def
+
+/append   %% array elem -- array with elem   | Append elem to array, returning a new array with result.
+{
+   1 index length dup 1 add array   % Create new larger array.
+   dup 0 6 -1 roll putinterval      % Copy old array into new.
+   dup 4 -2 roll                    % Duplicate array and stack roll.
+   exch put                         % Put element to end.
+} bind def
+
+
+%% --- Step 1 ----------
+
+% Nodes: data structure for Donld Knuth's DLX.
+
+/dlx.init    %% width height --
+{
+   /dlx.height exch def
+   /dlx.width exch def
+
+   % All nodes stored in an array with dicts.
+   /nodes 100 array def
+
+   % Create header node.
+   /dlx.HEAD_ID 0 def
+   nodes dlx.HEAD_ID <<
+      /L dlx.HEAD_ID /R dlx.HEAD_ID /U dlx.HEAD_ID /D dlx.HEAD_ID
+   >> put
+
+   /dlx.row_id 0 def
+
+   % Enumerate nodes from 1 and up.
+   /dlx.insert_id 1 def
+
+   dlx.width dlx.create_column_headers
+
+   % Use an iterative approach instead of recursion, just as day 11.
+   % (Recursion exists in PS, but it is crippled by lack of scopes.)
+   /dlx.workarray 1000 array def
+   /dlx.workarray_index -1 def
+
+   /dlx.solution 100 array def
+
+} bind def
+
+
+/dlx.create_column_headers     %% width --
+{
+   /prev_col dlx.HEAD_ID def
+
+   1 1 3 -1 roll
+   {
+      /col exch def
+
+      nodes col <<
+      /L prev_col
+      /R dlx.HEAD_ID     % No known right index. Updated below, but OK for last.
+      /U col
+      /D col
+      /C col
+      /S 0
+      >> put
+
+      nodes prev_col get /R col put  % Point prev.right to new
+      /prev_col col def
+   } for
+
+   nodes dlx.HEAD_ID get /L col put  % Point head left to last
+   /dlx.insert_id col 1 add def
+} bind def
+
+
+/dlx.inc_column_size     %% column_id --   | Increase given column header size (S) with 1.
+{
+   nodes exch get dup /S get 1 add /S exch put
+} bind def
+
+
+/dlx.dec_column_size     %% column_id --   | Decrease given column header size (S) with 1.
+{
+   nodes exch get dup /S get 1 sub /S exch put
+} bind def
+
+
+/dlx.add_row    % columns-array --  | Add a new row with specified columns.
+{
+   /columns exch def
+   /first_id dlx.insert_id def
+   /dlx.row_id dlx.row_id 1 add def
+
+   /added_ids [] def
+
+   % Add nodes for row and link then vertically in columns.
+   columns
+   {
+      /column_id exch def
+
+      /column_node nodes column_id get def
+      /above_node_id column_node /U get def
+      /above_node nodes above_node_id get def
+
+      nodes dlx.insert_id
+      <<
+         /L 0 /R 0
+         /U above_node_id
+         /D column_id
+         /C column_id
+         /RID dlx.row_id
+      >> put
+
+      above_node /D dlx.insert_id put   % Point above.down to this.
+      column_node /U dlx.insert_id put  % Point head.up to this.
+      column_id dlx.inc_column_size
+
+      /added_ids added_ids dlx.insert_id append def    % Keep track of added ID
+      /dlx.insert_id dlx.insert_id 1 add def
+   } forall
+
+   % Link new nodes horizontally.
+   /prev_id added_ids dup length 1 sub get def
+   added_ids
+   {
+      /id exch def
+      /node nodes id get def
+      node /L prev_id put
+      nodes prev_id get /R id put
+      /prev_id id def
+   } forall
+} bind def
+
+
+/dlx.push_state  %% column next_row chosen_row --  | Push state to workarray
+{
+   /p_chosen_row exch def
+   /p_next_row exch def
+   /p_column exch def
+   
+   <<
+      /column p_column
+      /next_row p_next_row
+      /chosen_row p_chosen_row
+   >>
+
+   /dlx.workarray_index dlx.workarray_index 1 add def
+   dlx.workarray dlx.workarray_index 3 -1 roll put
+} bind def
+
+
+/dlx.pop_state  %% --   | Pop current state from workarray
+{
+   /dlx.workarray_index dlx.workarray_index 1 sub def
+} bind def
+
+
+/dlx.cover    % column_index --  | Cover column (unlink column head and unlink all rows horizontally)
+{
+   /column_id exch def
+
+   % Unlink column header horizontally.
+   /column_node nodes column_id get def
+   /cl column_node /L get def
+   /cr column_node /R get def
+
+   nodes cl get /R cr put
+   nodes cr get /L cl put
+
+   % Iterate over all rows in column (all nodes), downwards.
+   /cy column_node /D get def       % cy = column_header.down
+   {
+      cy column_id eq { exit } if   % Reached column head, stop.
+
+      /row_node nodes cy get def    % Row node
+
+      /cx row_node /R get def       % Go right
+      {
+         cx cy eq { exit } if       % Break inner loop when we are back ar column.
+
+         /h_node nodes cx get def   % Horizontal node
+         /cu h_node /U get def
+         /cd h_node /D get def
+
+         nodes cu get /D cd put       % Link above.down = below
+         nodes cd get /U cu put       % Link below.up = above
+
+         h_node /C get dlx.dec_column_size
+
+         /cx h_node /R get def      % Set cx to next node right.
+      } loop
+
+      /cy row_node /D get def       % Set cy to next node below.
+   } loop
+} bind def
+
+
+/dlx.uncover    % column_index --  | Uncover column (relink all rows horizontally and relink coiumn header)
+{
+   /column_id exch def
+   /column_node nodes column_id get def
+
+   % Iterate over all rows in column (all nodes), upwards (reverse).
+   /cy column_node /U get def       % cy = column_header.up
+   {
+      cy column_id eq { exit } if   % Reached column head, stop.
+
+      /row_node nodes cy get def    % Row node
+
+      /cx row_node /L get def       % Go left (reverse)
+      {
+         cx cy eq { exit } if       % Break inner loop when we are back ar column.
+
+         /h_node nodes cx get def   % Horizontal node
+         /cu h_node /U get def
+         /cd h_node /D get def
+
+         nodes cu get /D cx put       % Relink above.down = cx
+         nodes cd get /U cx put       % Relink below.up = cx
+
+         h_node /C get dlx.inc_column_size
+
+         /cx h_node /L get def      % Set cx to next node left.
+      } loop
+
+      /cy row_node /U get def       % Set cy to next node above.
+   } loop
+
+   % Relink column header horizontally.
+   /cl column_node /L get def
+   /cr column_node /R get def
+
+   nodes cl get /R column_id put
+   nodes cr get /L column_id put
+} bind def
+
+
+/dlx.choose_column   %% -- column_id | Find column with smallest size
+{
+   /best_col -1 def
+   /best_size 1000000 def
+
+   /c nodes dlx.HEAD_ID get /R get def
+   {
+      c dlx.HEAD_ID eq { exit } if
+
+      /c_node nodes c get def
+      c_node /S get best_size lt
+      {
+         /best_col c def               % Found smaller, update best_col
+         /best_size c_node /S get def
+      } if
+
+      /c c_node /R get def
+   } loop
+
+   best_col
+} bind def
+
+/dlx.print
+{
+   /i 0 def
+   nodes
+   {
+      dup null eq
+      {
+         pop exit
+      }
+      {
+         {
+            exch
+            ([) print i 10 string cvs print (]  ) print
+            (key: ) print 10 string cvs print (, value: ) print 10 string cvs println
+         } forall
+      } ifelse
+      /i i 1 add def
+   } forall
+} bind def
+
+
+/dlx.search  %% -  | DLX search iteratively. Store result in dlx.solution.
+{
+   /found_solution false def
+   /k 0 def
+
+   % Find start column.
+   /c dlx.choose_column def  % initial column
+   c dlx.cover
+
+   % Push initial state (column) to workarray.
+   c nodes c get /D get 0 dlx.push_state
+
+   /guard 0 def
+   {
+      dlx.workarray_index -1 eq { exit } if    % Break when work stack is empty.
+      found_solution { exit } if
+
+      /frame dlx.workarray dlx.workarray_index get def
+      /c frame /column get def
+
+      % If returning from child, undo chosen row.
+      frame /chosen_row get 0 ne
+      {
+         /r frame /chosen_row get def
+         frame /chosen_row 0 put
+
+         /x nodes r get /L get def
+         {
+            x r eq { exit } if
+            nodes x get /C get dlx.uncover
+            /x nodes x get /L get def
+         } loop
+      } if
+
+      % Try next row in selected column.
+      /r frame /next_row get def
+
+      r c eq   % Reached header?
+      {
+         % No more rows. Backtrack from column.
+         c dlx.uncover
+         dlx.pop_state
+         /k k 1 sub def
+      }
+      {
+         % Advance iterator to next row.
+         frame /next_row nodes r get /D get put
+
+         frame /chosen_row r put
+         dlx.solution dlx.workarray_index nodes r get /RID get put
+
+         % Cover other columns in row.
+         /guard2 0 def
+         /x nodes r get /R get def
+         {
+            x r eq { exit } if
+            nodes x get /C get dlx.cover
+            /x nodes x get /R get def
+
+            /guard2 guard2 1 add def
+            guard2 1000 gt { (HANG in column loop!) = quit } if
+         } loop
+
+         nodes dlx.HEAD_ID get /R get dlx.HEAD_ID eq  % Head.R points to head.
+         {
+            /found_solution true def
+         }
+         {
+            % Descend ("recurse").
+            /c2 dlx.choose_column def
+            c2 dlx.cover
+            c2 nodes c2 get /D get 0 dlx.push_state
+            /k k 1 add def           
+         } ifelse
+      } ifelse
+
+      /guard guard 1 add def
+      guard 1000 gt { (HANG in row loop!) = quit } if
+   } loop
+
+} bind def
+
+
+
+%-----------------------------------------------------
+
+%% --- Step 2 ----------
+
+
+%% ------------------------------
+
+setup_output
+
+7 6 dlx.init
+
+[3 5 6] dlx.add_row
+[1 4 7] dlx.add_row
+[2 3 6] dlx.add_row
+[1 4] dlx.add_row
+[2 7] dlx.add_row
+[4 5 7] dlx.add_row
+
+dlx.print
+
+dlx.search
+dlx.solution ==
+
