@@ -63,7 +63,7 @@ That also makes recursion problematic for tree searching.
 <img src="images/ps-logo.png" width="220px"/>
 
 ## Results
-I have currently managed to finish days 1 to 11.
+I have managed to finish days 1 to 12 (all).
 
 I for long thought that day 10 part 2 exceeded what is practical
 or possible in PostScript. But after expressing my problems on
@@ -73,4 +73,3 @@ develop a better solution. Even though it took some 10 minutes
 to calculate through all the "machines" for that task on a modern
 machine I got the correct answer! *Many thanks to **u/kupuguy** for
 the specific solution idea that was possible in PostScript!*
-
