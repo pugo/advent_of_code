@@ -18,12 +18,12 @@
 %  as this file and then the inject can be done by a simple 'make':
 %
 %     $ make
-%  
-%  To run with GhostScript, with injected data: 
+%
+%  To run with GhostScript, with injected data:
 %
 %     $ make run
 %
-%  To print on a PostScript printer: 
+%  To print on a PostScript printer:
 %  Send the injected file to the printer: 6_injected.ps
 % --------------------------------------------------------------------------
 
@@ -45,14 +45,51 @@
    /RM   578 def     % Right margin
    /TM   700 def     % Top margin
    /BM   10 def      % Bottom margin
-   /fontsize 18 def  % Change this to change font-size
+   /fontsize 24 def  % Change this to change font-size
    /ypos TM def      % current y-position
    /lineheight fontsize def
 
    /font_normal /Times-Roman findfont fontsize scalefont def
    /font_bold /Times-Bold findfont fontsize scalefont def
    font_normal setfont
+   0.8 0 0 setrgbcolor
 } def
+
+/snowflake
+{
+   /s exch def
+   /d exch def
+   /angle 360 d div def
+   d {
+      gsave
+      1 setlinewidth
+      0.6 0.6 0.9 setrgbcolor
+      0 10 rlineto stroke
+      grestore
+      gsave 0 7 rmoveto 5 {
+         0.7 setlinewidth
+         0.4 0.4 0.8 setrgbcolor
+         gsave 0 s rlineto stroke grestore 72  rotate
+      } repeat
+      grestore
+      angle rotate
+   } repeat
+} bind def
+
+/random_snow
+{
+   realtime srand
+   50 {
+      gsave
+      rand 620 mod rand 850 mod moveto
+      rand 90 mod rotate
+      0.5 rand 50 mod 100 div add dup scale
+      4 rand 4 mod add
+      2 rand 50 mod 10 div add
+      snowflake
+      grestore
+   } repeat
+} bind def
 
 /newline
  { currentpoint exch pop lineheight sub  % calc y-val
@@ -63,13 +100,13 @@
      /ypos exch def
      LM ypos moveto } ifelse
 } def
-   
+
 /prtstr
  { dup stringwidth pop      % calc length of string
    currentpoint pop         % get horizontal position
    add RM gt                % sum > right margin?
    {newline} if             % if so, next line
-   show 
+   show
 } def
 
 /setnormal { font_normal setfont } bind def
@@ -135,7 +172,7 @@
    0 exch { add } repeat
 } def
 
-/mul_n   % n -- sum   | Multiply n number of integers from stack 
+/mul_n   % n -- sum   | Multiply n number of integers from stack
 {
    1 exch { mul } repeat
 } def
@@ -156,7 +193,7 @@
 } bind def
 
 
-/read_puzzle  %% array -- 
+/read_puzzle  %% array --
 {
    /input exch def
    /read_puzzle_sum 0 def
@@ -165,15 +202,15 @@
    split length /height exch def
    split 0 get length /width exch def
 
-   0 1 width 1 sub 
+   0 1 width 1 sub
    {
       /x exch def
       0 1 height 1 sub
       {
          /y exch def
 
-         split y get x get         
-         
+         split y get x get
+
       } for
       height calc_op
       /read_puzzle_sum exch read_puzzle_sum add def
@@ -190,7 +227,7 @@
 
 /vertical_iter
 {
-   /input exch def   
+   /input exch def
 
    input length /height exch def
    input 0 get length /width exch def
@@ -226,7 +263,7 @@
             dup
             32 ne    % 32 = " "
             {
-               43 eq  
+               43 eq
                {  % +
                   workarray aload pop
                   workarray length
@@ -259,6 +296,8 @@ setup_output
 problem_numbers read_puzzle /step_1_answer exch def
 problem_numbers vertical_iter /step_2_answer exch def
 
+random_snow
+
 % Output to paper
 LM TM moveto
 setbold (Advent of Code 2025) prtstr setnormal newline newline
@@ -267,6 +306,6 @@ setbold (Sum step 1: ) prtstr setnormal step_1_answer 100 string cvs prtstr newl
 setbold (Sum step 2: ) prtstr setnormal step_2_answer 100 string cvs prtstr newline
 
 % Write to stdout as well
-(\nAdvent of Code 2025  - Day 6 - Anders Piniesjö\n) println 
+(\nAdvent of Code 2025  - Day 6 - Anders Piniesjö\n) println
 (Sum step 1: ) print step_1_answer 20 string cvs println
 (Sum step 2: ) print step_2_answer 20 string cvs println

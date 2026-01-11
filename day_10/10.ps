@@ -18,12 +18,12 @@
 %  as this file and then the inject can be done by a simple 'make':
 %
 %     $ make
-%  
-%  To run with GhostScript, with injected data: 
+%
+%  To run with GhostScript, with injected data:
 %
 %     $ make run
 %
-%  To print on a PostScript printer: 
+%  To print on a PostScript printer:
 %  Send the injected file to the printer: 10_injected.ps
 % --------------------------------------------------------------------------
 
@@ -51,14 +51,51 @@
    /RM   578 def     % Right margin
    /TM   700 def     % Top margin
    /BM   10 def      % Bottom margin
-   /fontsize 18 def  % Change this to change font-size
+   /fontsize 24 def  % Change this to change font-size
    /ypos TM def      % current y-position
    /lineheight fontsize def
 
    /font_normal /Times-Roman findfont fontsize scalefont def
    /font_bold /Times-Bold findfont fontsize scalefont def
    font_normal setfont
+   0.8 0 0 setrgbcolor
 } def
+
+/snowflake
+{
+   /s exch def
+   /d exch def
+   /angle 360 d div def
+   d {
+      gsave
+      1 setlinewidth
+      0.6 0.6 0.9 setrgbcolor
+      0 10 rlineto stroke
+      grestore
+      gsave 0 7 rmoveto 5 {
+         0.7 setlinewidth
+         0.4 0.4 0.8 setrgbcolor
+         gsave 0 s rlineto stroke grestore 72  rotate
+      } repeat
+      grestore
+      angle rotate
+   } repeat
+} bind def
+
+/random_snow
+{
+   realtime srand
+   50 {
+      gsave
+      rand 620 mod rand 850 mod moveto
+      rand 90 mod rotate
+      0.5 rand 50 mod 100 div add dup scale
+      4 rand 4 mod add
+      2 rand 50 mod 10 div add
+      snowflake
+      grestore
+   } repeat
+} bind def
 
 /newline
  { currentpoint exch pop lineheight sub  % calc y-val
@@ -69,13 +106,13 @@
      /ypos exch def
      LM ypos moveto } ifelse
 } def
-   
+
 /prtstr
  { dup stringwidth pop      % calc length of string
    currentpoint pop         % get horizontal position
    add RM gt                % sum > right margin?
    {newline} if             % if so, next line
-   show 
+   show
 } def
 
 /setnormal { font_normal setfont } bind def
@@ -152,24 +189,24 @@
 
 %% --- Step 1 ----------
 %% The solution idea is that the target lamp configuration as well as the button
-%% presses can be seen as binary numbers. That reduces the problem to XOR of 
+%% presses can be seen as binary numbers. That reduces the problem to XOR of
 %% integers. Next idea is that no button can be pressed more than once for a
 %% lowest result. Multiple presses of a button would just toggle the effect,
 %% due to the XOR operation.
 
 /s1:solve_problem
 {
-   aload pop 
+   aload pop
    /sp:jolts exch def
    /sp:buttons exch def
    pop   % Skip buttons array
    /sp:lamps exch def
-   /sp:buttons_count sp:buttons length def 
+   /sp:buttons_count sp:buttons length def
    /sp:result 10000 def
 
    % Loop 0 .. 2^buttons_count - 1
    0 1 1 sp:buttons_count bitshift 1 sub
-   {  
+   {
       /sp:mask exch def
       /sp:val 0 def
       /sp:presscount 0 def
@@ -187,7 +224,7 @@
       sp:val sp:lamps eq
       {
          /sp:result sp:result sp:presscount min def
-      } if   
+      } if
    } for
 
    sp:result 10000 eq { /sp:result 0 def } if
@@ -241,7 +278,7 @@
 
    % % Loop 0 .. 2^p2:buttons_len - 1 (All button combinations)
    0 1 1 p2:buttons_len bitshift 1 sub
-   {  
+   {
       /mask exch def       % button mask this turn
       /val 0 def
       /presscount 0 def
@@ -300,14 +337,14 @@
    dup length 0 1 3 -1 roll 1 sub
    { % jolts jolts_delta i
       dup 3 index exch get          % jolts jolts_delta i jolt
-      2 index 2 index get           % jolts jolts_delta i jolt delta_val  
+      2 index 2 index get           % jolts jolts_delta i jolt delta_val
       sub 2 idiv                    % jolts jolts_delta i result
       p2:transform_result 3 -2 roll put
    } for
 
    pop pop
    p2:transform_result
-} bind def 
+} bind def
 
 
 /p2:iterate_jolt_bits   %% - int | Find the lowest number of presses for wanted jolts
@@ -408,6 +445,8 @@ input_data s1:parse_indata /s1:parsed_data exch def
 s1:parsed_data s1:solve_problems /result_step_1 exch def
 s1:parsed_data p2:solve_problems /result_step_2 exch def
 
+random_snow
+
 % Output to paper
 LM TM moveto
 setbold (Advent of Code 2025) prtstr setnormal newline newline
@@ -416,6 +455,6 @@ setbold (Result step 1: ) prtstr setnormal result_step_1 100 string cvs prtstr n
 setbold (Result step 2: ) prtstr setnormal result_step_2 100 string cvs prtstr newline
 
 % Write to stdout as well
-(\nAdvent of Code 2025  - Day 10 - Anders Piniesjö\n) println 
+(\nAdvent of Code 2025  - Day 10 - Anders Piniesjö\n) println
 (Result step 1: ) print result_step_1 20 string cvs println
 (Result step 2: ) print result_step_2 20 string cvs println

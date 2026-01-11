@@ -18,12 +18,12 @@
 %  as this file and then the inject can be done by a simple 'make':
 %
 %     $ make
-%  
-%  To run with GhostScript, with injected data: 
+%
+%  To run with GhostScript, with injected data:
 %
 %     $ make run
 %
-%  To print on a PostScript printer: 
+%  To print on a PostScript printer:
 %  Send the injected file to the printer: 1_injected.ps
 % --------------------------------------------------------------------------
 
@@ -44,14 +44,52 @@
    /RM   578 def     % Right margin
    /TM   700 def     % Top margin
    /BM   10 def      % Bottom margin
-   /fontsize 18 def  % Change this to change font-size
+   /fontsize 24 def  % Change this to change font-size
    /ypos TM def      % current y-position
    /lineheight fontsize def
 
    /font_normal /Times-Roman findfont fontsize scalefont def
    /font_bold /Times-Bold findfont fontsize scalefont def
    font_normal setfont
+   0.8 0 0 setrgbcolor
 } def
+
+/snowflake
+{
+   /s exch def
+   /d exch def
+   /angle 360 d div def
+   d {
+      gsave
+      1 setlinewidth
+      0.6 0.6 0.9 setrgbcolor
+      0 10 rlineto stroke
+      grestore
+      gsave 0 7 rmoveto 5 {
+         0.7 setlinewidth
+         0.4 0.4 0.8 setrgbcolor
+         gsave 0 s rlineto stroke grestore 72  rotate
+      } repeat
+      grestore
+      angle rotate
+   } repeat
+} bind def
+
+
+/random_snow
+{
+   realtime srand
+   50 {
+      gsave
+      rand 620 mod rand 850 mod moveto
+      rand 90 mod rotate
+      0.5 rand 50 mod 100 div add dup scale
+      4 rand 4 mod add
+      2 rand 50 mod 10 div add
+      snowflake
+      grestore
+   } repeat
+} bind def
 
 /newline
  { currentpoint exch pop lineheight sub  % calc y-val
@@ -62,13 +100,13 @@
      /ypos exch def
      LM ypos moveto } ifelse
 } def
-   
+
 /prtstr
  { dup stringwidth pop      % calc length of string
    currentpoint pop         % get horizontal position
    add RM gt                % sum > right margin?
    {newline} if             % if so, next line
-   show 
+   show
 } def
 
 /setnormal { font_normal setfont } bind def
@@ -87,13 +125,13 @@
 
 /count_turns    % int (ticks), str (direction) - int (new val)
 {
-   dup (L) eq 
-   { 
+   dup (L) eq
+   {
       exch dial exch sub 100 mod 100 add 100 mod
    } if
-   
-   dup (R) eq 
-   { 
+
+   dup (R) eq
+   {
       exch dial exch add 100 mod
    } if
    exch pop % pop direction
@@ -124,14 +162,14 @@
    /dir exch def
    /ticks exch def
 
-   dir (L) eq 
-   { 
+   dir (L) eq
+   {
       dial ticks sub 100 div ceiling dial 100 div ceiling sub abs % leaving 0-passes on stack
       dial ticks sub 100 mod 100 add 100 mod
    } if
-   
-   dir (R) eq 
-   { 
+
+   dir (R) eq
+   {
       dial ticks add 100 div floor dial 100 div floor sub abs % leaving 0-passes on stack
       dial ticks add 100 mod
    } if
@@ -162,14 +200,16 @@ setup_output
 step_1
 step_2
 
+random_snow
+
 LM TM moveto
 setbold (Advent of Code 2025) prtstr setnormal newline newline
-(- Day 2 -) prtstr 1 1 6 { pop newline } for
+(- Day 1 -) prtstr 1 1 6 { pop newline } for
 setbold (Result Step 1: ) prtstr setnormal result_step_1 100 string cvs prtstr newline newline
 setbold (Result Step 2: ) prtstr setnormal result_step_2 100 string cvs prtstr newline
 
 % Write to stdout as well
-(\nAdvent of Code 2025  - Day 1 - Anders Piniesjö\n) println 
+(\nAdvent of Code 2025  - Day 1 - Anders Piniesjö\n) println
 (Step 1: ) print result_step_1 20 string cvs println
 (Step 2: ) print result_step_2 20 string cvs println
 

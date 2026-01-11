@@ -49,13 +49,14 @@
    /RM   578 def     % Right margin
    /TM   700 def     % Top margin
    /BM   10 def      % Bottom margin
-   /fontsize 18 def  % Change this to change font-size
+   /fontsize 24 def  % Change this to change font-size
    /ypos TM def      % current y-position
    /lineheight fontsize def
 
    /font_normal /Times-Roman findfont fontsize scalefont def
    /font_bold /Times-Bold findfont fontsize scalefont def
    font_normal setfont
+   0.8 0 0 setrgbcolor
 } def
 
 /newline
@@ -112,7 +113,7 @@
 /count_shape_cells  %% shape_number -- cells  | Count number of cells covered by shape
 {
    /result 0 def
-   input_shapes exch get 
+   input_shapes exch get
    {
       {
          35 eq { /result result 1 add def } if
@@ -138,7 +139,7 @@
    aload pop
    /shape_counts exch def
    /region_size exch def
-   
+
    /cell_count region_size aload pop mul def
 
    /shape_count 0 def
@@ -167,6 +168,43 @@
 } bind def
 
 
+/snowflake
+{
+   /s exch def
+   /d exch def
+   /angle 360 d div def
+   d {
+      gsave
+      1 setlinewidth
+      0.6 0.6 0.9 setrgbcolor
+      0 10 rlineto stroke
+      grestore
+      gsave 0 7 rmoveto 5 {
+         0.7 setlinewidth
+         0.4 0.4 0.8 setrgbcolor
+         gsave 0 s rlineto stroke grestore 72  rotate
+      } repeat
+      grestore
+      angle rotate
+   } repeat
+} bind def
+
+
+/random_snow
+{
+   50 {
+      gsave
+      rand 620 mod rand 850 mod moveto
+      rand 90 mod rotate
+      0.5 rand 50 mod 100 div add dup scale
+      4 rand 4 mod add
+      2 rand 50 mod 10 div add
+      snowflake
+      grestore
+   } repeat
+} bind def
+
+
 %% ------------------------------
 
 setup_output
@@ -174,6 +212,13 @@ setup_output
 input_data_shapes input_data_regions s1_init
 count_shapes_cells
 test_regions /result_step_1 exch def
+
+% 300 300 moveto 7 2.5 snowflake
+% 320 300 moveto 6 3 snowflake
+% 340 300 moveto 5 3.5 snowflake
+
+realtime srand
+random_snow
 
 % Output to paper
 LM TM moveto
