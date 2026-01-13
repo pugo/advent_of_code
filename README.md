@@ -32,7 +32,11 @@ provided us a free PostScript intepreter since 1988!
 ## Running
 The data input files (`input.txt`) are personal and not included
 in this repository. To run a task, place your own `input.txt` in
-respective directory and run `make run`.
+respective directory and run `make`. That will produce a copy
+of the PostScript file with name `#_injected.ps` which has the
+data correctly injected. That file can be sent to a printer.
+
+To run directly, with Ghostscript, run `make run`.
 
 ## What is Postscript?
 [PostScript (PS)](https://en.wikipedia.org/wiki/PostScript) is a 
