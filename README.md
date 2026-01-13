@@ -60,7 +60,7 @@ That also makes recursion problematic for tree searching.
 
 *The successor of PostScript is PDF.*
 
-<img src="images/ps-logo.png" width="20px"/>
+<img src="images/ps-logo.png" width="200px"/>
 
 ## Results
 I have managed to finish days 1 to 12 (all).
