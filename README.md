@@ -5,7 +5,8 @@
 By Anders Piniesjö.
 
 This is an attempt to solve the [Advent of Code for 2025](https://adventofcode.com/2025) 
-in **PostScript**.
+in **PostScript**. This means that when sent to a PostScript printer
+the tasks are executed and solved on the printer!
 
 <img src="images/progress.png" width="410px"/>
 
