@@ -10,13 +10,24 @@ Class {
 	#package : 'AOC'
 }
 
+{ #category : 'execution' }
+AoC2024Day01 class >> run [
+ | solver input |
+    solver := self new.
+
+	 input := AOCInput new day: 1.
+
+    Transcript
+        cr;cr;
+        show: '2024 Day 1 - by Anders Piniesjö'; cr;
+        show: 'Part 1: ';
+        show: (solver part1: input); cr;
+        show: 'Part 2: ';
+        show: (solver part2: input); cr
+]
+
 { #category : 'parsing' }
 AoC2024Day01 >> demoData [
-	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"
-
-	| |
-	
 	^ '3   4
 4   3
 2   5
@@ -75,4 +86,9 @@ AoC2024Day01 >> part2: input [
    ^ score sum
 
 
+]
+
+{ #category : 'execution' }
+AoC2024Day01 >> run [
+	^ self class run
 ]
