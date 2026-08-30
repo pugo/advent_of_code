@@ -23,7 +23,7 @@ AoC2024Day03 class >> run [
         show: 'Part 1: ';
         show: (solver part1: input); cr;
         show: 'Part 2: ';
-        show: (solver part2: input); cr
+        show: (solver part2: input); cr.
 ]
 
 { #category : 'parsing' }
@@ -33,62 +33,61 @@ AoC2024Day03 >> demoData [
 ]
 
 { #category : 'parsing' }
-AoC2024Day03 >> parseInput: input [
+AoC2024Day03 >> demoData2 [
+   ^ 'xmul(2,4)&mul[3,7]!^don''t()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))'
+]
+
+{ #category : 'parts' }
+AoC2024Day03 >> mul: mulstr [
+	|  catch_regex a b |
+
+	catch_regex := 'mul\((\d{1,3}),(\d{1,3})\)' asRegex.
+   catch_regex matches: mulstr.
 	
-	| lines numbers  |
-	
-	lines := input lines.
+	a := (catch_regex subexpression: 2) asInteger.
+	b := (catch_regex subexpression: 3) asInteger.
 
-	numbers :=
-    lines collect: [ :line |
-        line substrings 
-            collect: [ :token | token asInteger ]
-    ]. 
-
-
-   ^ numbers
-
+	^ a * b.
 ]
 
 { #category : 'parts' }
 AoC2024Day03 >> part1: input [
-	|  mul_regex sum catch_regex |
+	|  mul_regex sum |
 	
 	mul_regex := 'mul\((\d{1,3}),(\d{1,3})\)' asRegex.
-	catch_regex := 'mul\((\d{1,3}),(\d{1,3})\)' asRegex.
 	
 	sum := 0.
 	
-	mul_regex matchesIn: input do: [ :match |
-		| a b |
-	   catch_regex matches: match.
-	
-		a := (catch_regex subexpression: 2) asInteger.
-		b := (catch_regex subexpression: 3) asInteger.
-		sum := sum + (a*b).
-		"Transcript show: a*b;cr."
-	 ].
+	mul_regex matchesIn: input do: [ :instruction |
+		sum := sum + (self mul: instruction).
+	].
 
 	^ sum
 ]
 
 { #category : 'parts' }
 AoC2024Day03 >> part2: input [
-	| reports safe |
+	|  mul_regex sum catch_regex enabled |
 	
-	reports := self parseInput: input.
-	safe := 0.
+	mul_regex := 'mul\((\d{1,3},\d{1,3})\)|do\(\)|don''t\(\)' asRegex.
 	
-	reports do: [ :report |				
-		(self analyzeSample: report) 
-			ifTrue: [ safe := safe + 1. ]
-			ifFalse: [ 
-				(self analyzeSampleReduced: report)
-					ifTrue: [ safe := safe + 1. ].
-		   ].
-		 ].
+	sum := 0.
+	enabled := true.
 	
-	^ safe
+	mul_regex matchesIn: input do: [ :instruction |
+		instruction = 'do()' 
+			ifTrue: [ enabled := true. ].
 
+		instruction = 'don''t()' 
+			ifTrue: [ enabled := false. ].
 
+		(instruction beginsWith: 'mul(')
+			ifTrue: [ 
+				enabled ifTrue: [ 
+					sum := sum + (self mul: instruction).
+				]
+			].
+	 ].
+
+	^ sum
 ]
