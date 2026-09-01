@@ -32,6 +32,36 @@ AoC2024Day04 class >> on: input [
 ]
 
 { #category : 'parts' }
+AoC2024Day04 >> checkGridChar: c x: x y: y [
+	^ ((grid at: y) at: x) = c
+
+]
+
+{ #category : 'parts' }
+AoC2024Day04 >> findMas: pos [
+   (
+		 (((self checkGridChar: $M x: (pos x - 1) y: (pos y - 1)) & 
+	      (self checkGridChar: $S x: (pos x + 1) y: (pos y + 1))) |
+	
+	     ((self checkGridChar: $S x: (pos x - 1) y: (pos y - 1)) & 
+		   (self checkGridChar: $M x: (pos x + 1) y: (pos y + 1))))
+		 &
+
+		 (((self checkGridChar: $M x: (pos x + 1) y: (pos y - 1)) & 
+	      (self checkGridChar: $S x: (pos x - 1) y: (pos y + 1))) |
+	
+	     ((self checkGridChar: $S x: (pos x + 1) y: (pos y - 1)) & 
+		   (self checkGridChar: $M x: (pos x - 1) y: (pos y + 1))))
+	) ifTrue: [ ^1 ].
+		
+^ 0.
+		
+
+	
+
+]
+
+{ #category : 'parts' }
 AoC2024Day04 >> findXmas: pos [
 	| result |
 	result := 0.
@@ -53,7 +83,7 @@ AoC2024Day04 >> findXmasDir: pos x: xdir y: ydir [
 	| height width |
 	
 	height := grid size.
-	width := (grid at: 1) size.
+	width := grid first size.
 	
 		1 to: 3 do: [ :i |
 			| xx yy |
@@ -97,8 +127,28 @@ AoC2024Day04 >> part1 [
 
 { #category : 'parts' }
 AoC2024Day04 >> part2 [
+	|  result height width |
 
-	^ 0
+	result := 0.
+
+	height := grid size.
+	width := grid first size.
+	
+	2 to: (height - 1) do: [ :y |
+		| line |
+		line := grid at: y.
+
+		2 to: (width - 1) do: [ :x |
+			| c |
+			c := line at: x.
+
+			c = $A ifTrue: [ 
+				result := result + (self findMas: x@y).
+			].			
+		].
+	].
+	
+	^ result.	
 ]
 
 { #category : 'running' }
