@@ -4,8 +4,9 @@ Class {
 	#instVars : [
 		'inputData'
 	],
-	#category : 'AOC',
-	#package : 'AOC'
+	#category : 'AOC-Days',
+	#package : 'AOC',
+	#tag : 'Days'
 }
 
 { #category : 'parsing' }

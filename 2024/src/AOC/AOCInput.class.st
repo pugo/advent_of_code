@@ -1,8 +1,9 @@
 Class {
 	#name : 'AOCInput',
 	#superclass : 'Object',
-	#category : 'AOC',
-	#package : 'AOC'
+	#category : 'AOC-Utils',
+	#package : 'AOC',
+	#tag : 'Utils'
 }
 
 { #category : 'as yet unclassified' }

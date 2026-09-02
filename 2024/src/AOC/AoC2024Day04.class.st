@@ -4,8 +4,9 @@ Class {
 	#instVars : [
 		'grid'
 	],
-	#category : 'AOC',
-	#package : 'AOC'
+	#category : 'AOC-Days',
+	#package : 'AOC',
+	#tag : 'Days'
 }
 
 { #category : 'parsing' }

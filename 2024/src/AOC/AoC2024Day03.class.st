@@ -6,8 +6,9 @@ Class {
 		'demo',
 		'lines'
 	],
-	#category : 'AOC',
-	#package : 'AOC'
+	#category : 'AOC-Days',
+	#package : 'AOC',
+	#tag : 'Days'
 }
 
 { #category : 'running' }
