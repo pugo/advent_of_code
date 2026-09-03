@@ -79,6 +79,27 @@ AoC2024Day06 >> part1 [
 
 { #category : 'parts' }
 AoC2024Day06 >> part2 [
+	| height width tempData loopCount |
+	
+	height := inputData size.
+	width := inputData first size.
+	loopCount := 0.
+
+	1 to: height do: [ :y |
+		1 to: width do: [ :x |
+			tempData := inputData deepCopy.
+			grid := AoC2024Day06Grid from: tempData.	
+			guard := AoC2024Day06Guard on: grid.
+			
+			grid charAtPos: x@y set: $#. 
+			
+			[ guard alive ] whileTrue: [ self doStep ].
+
+			guard looping ifTrue: [ loopCount := loopCount + 1 ].			
+		 ]
+	 ].
+	
+	Transcript show: loopCount; cr.
 
 ]
 

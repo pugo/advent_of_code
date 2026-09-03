@@ -5,7 +5,10 @@ Class {
 		'pos',
 		'dir',
 		'grid',
-		'inside'
+		'inside',
+		'looping',
+		'memory',
+		'visited'
 	],
 	#category : 'AOC-Days',
 	#package : 'AOC',
@@ -18,6 +21,11 @@ AoC2024Day06Guard class >> on: grid [
 	^ self new
 		initializeOn: grid
 		  yourself.
+]
+
+{ #category : 'accessing' }
+AoC2024Day06Guard >> alive [
+   ^ inside & (looping not)
 ]
 
 { #category : 'accessing' }
@@ -85,17 +93,21 @@ AoC2024Day06Guard >> initializeOn: newGrid [
 	dir := self dirFromChar: (grid charAtPos: pos).
 
 	inside := grid posIsInside: pos.
+	looping := false.
 	
-	Transcript 
-		show: 'Initialized guard at: ';
-		show: pos;
-		show: ', direction: ';
-		show: dir; cr.
+	"Map of visited nodes, pos -> set(directions)"
+	visited := Dictionary new.
+
 ]
 
 { #category : 'accessing' }
 AoC2024Day06Guard >> inside [
    ^ inside
+]
+
+{ #category : 'accessing' }
+AoC2024Day06Guard >> looping [
+   ^ looping 
 ]
 
 { #category : 'accessing' }
@@ -117,7 +129,7 @@ AoC2024Day06Guard >> posAhead [
 	^ pos.
 ]
 
-{ #category : 'accessing' }
+{ #category : 'running' }
 AoC2024Day06Guard >> turnRight [
 	
 	dir 
@@ -132,18 +144,21 @@ AoC2024Day06Guard >> turnRight [
 
 ]
 
-{ #category : 'accessing' }
+{ #category : 'running' }
 AoC2024Day06Guard >> walk [
-
+	| visitedDirections |
+	
 	grid charAtPos: pos set: $X.
 
 	pos := self posAhead.
 
+	"Check and store visited directions to detect loops."
+	visitedDirections := visited at: pos ifAbsentPut: [ Set new ].
+	(visitedDirections includes: dir) ifTrue: [ looping := true. ].
+	visitedDirections add: dir.
+
 	(grid posIsInside: pos) 
 		ifTrue: [ grid charAtPos: pos set: self charFromDir ]
 		ifFalse: [ inside := false ].
-
-
-
 
 ]
