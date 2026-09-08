@@ -2,9 +2,7 @@ Class {
 	#name : 'AoC2024Day07',
 	#superclass : 'Object',
 	#instVars : [
-		'inputData',
-		'guard',
-		'grid'
+		'inputData'
 	],
 	#category : 'AOC-Days',
 	#package : 'AOC',

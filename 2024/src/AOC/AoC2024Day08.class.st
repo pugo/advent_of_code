@@ -3,7 +3,6 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'inputData',
-		'guard',
 		'grid'
 	],
 	#category : 'AOC-Days',

@@ -64,6 +64,21 @@ AoCGrid >> initializeFrom: data [
 	
 ]
 
+{ #category : 'initialization' }
+AoCGrid >> listFromChar: chr [
+	| result |
+	
+	result := OrderedCollection new.
+	
+	grid withIndexDo: [ :line :y | 
+		line withIndexDo: [ :c :x |
+			(c = chr) ifTrue: [ result add: x@y ].			
+		].
+	].
+	
+   ^ result.
+]
+
 { #category : 'running' }
 AoCGrid >> posIsInside: pos [
 	"Return true if pos is inside the grid."
