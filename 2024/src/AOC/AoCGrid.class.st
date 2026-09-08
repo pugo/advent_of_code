@@ -1,5 +1,5 @@
 Class {
-	#name : 'Grid',
+	#name : 'AoCGrid',
 	#superclass : 'Object',
 	#instVars : [
 		'grid',
@@ -12,7 +12,7 @@ Class {
 }
 
 { #category : 'accessing' }
-Grid class >> from: data [
+AoCGrid class >> from: data [
 
 	^ self new
 		initializeFrom: data
@@ -20,20 +20,20 @@ Grid class >> from: data [
 ]
 
 { #category : 'running' }
-Grid >> charAtPos: pos [
+AoCGrid >> charAtPos: pos [
 
    ^ (grid at: (pos y)) at: (pos x)
 ]
 
 { #category : 'running' }
-Grid >> charAtPos: pos set: newChar [
+AoCGrid >> charAtPos: pos set: newChar [
 
    (grid at: (pos y)) at: (pos x) put: newChar.
 	
 ]
 
 { #category : 'initialization' }
-Grid >> countChar: chr [
+AoCGrid >> countChar: chr [
 	| result |
 	
 	result := 0.
@@ -46,17 +46,17 @@ Grid >> countChar: chr [
 ]
 
 { #category : 'initialization' }
-Grid >> grid [
+AoCGrid >> grid [
 	^ grid
 ]
 
 { #category : 'initialization' }
-Grid >> height [
+AoCGrid >> height [
 	^ height
 ]
 
 { #category : 'initialization' }
-Grid >> initializeFrom: data [
+AoCGrid >> initializeFrom: data [
 
    grid := data.
 	height := grid size.
@@ -65,7 +65,7 @@ Grid >> initializeFrom: data [
 ]
 
 { #category : 'running' }
-Grid >> posIsInside: pos [
+AoCGrid >> posIsInside: pos [
 	"Return true if pos is inside the grid."
 	
 	^ ((pos x > 0) & (pos x <= width) & (pos y > 0) & (pos y <= height))
@@ -73,7 +73,7 @@ Grid >> posIsInside: pos [
 ]
 
 { #category : 'initialization' }
-Grid >> printGrid [
+AoCGrid >> printGrid [
 
 	grid do: [ :line | 
 		line do: [ :c |
@@ -84,6 +84,6 @@ Grid >> printGrid [
 ]
 
 { #category : 'initialization' }
-Grid >> width [
+AoCGrid >> width [
 	^ width
 ]

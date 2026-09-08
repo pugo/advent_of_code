@@ -63,7 +63,7 @@ AoC2024Day06 >> inputData: data [
 
 { #category : 'parts' }
 AoC2024Day06 >> part1 [
-	grid := Grid from: self inputData.
+	grid := AoCGrid from: self inputData.
 	guard := AoC2024Day06Guard on: grid.
 	
 	[ guard inside ] whileTrue: [ self doStep ].
@@ -86,7 +86,7 @@ AoC2024Day06 >> part2 [
 	1 to: height do: [ :y |
 		1 to: width do: [ :x |
 			tempData := inputData deepCopy.
-			grid := Grid from: tempData.	
+			grid := AoCGrid from: tempData.	
 			guard := AoC2024Day06Guard on: grid.
 			
 			grid charAtPos: x@y set: $#. 

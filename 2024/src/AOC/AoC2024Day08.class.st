@@ -71,7 +71,7 @@ AoC2024Day08 >> inputData: data [
 AoC2024Day08 >> part1 [
 	| antennas |
 
-	grid := Grid from: self inputData.
+	grid := AoCGrid from: self inputData.
 
 	antennas := self findAntennas.
 	
@@ -87,7 +87,7 @@ AoC2024Day08 >> part1 [
 AoC2024Day08 >> part2 [
 	| antennas |
 
-	grid := Grid from: self inputData.
+	grid := AoCGrid from: self inputData.
 
 	antennas := self findAntennas.
 	
@@ -147,7 +147,7 @@ AoC2024Day08 >> plotAntinodes: antenna continuous: continuous [
 AoC2024Day08 >> run [
 	Transcript
    		cr;cr;
-      show: '2024 Day 7 - by Anders Piniesjö'; cr;
+      show: '2024 Day 8 - by Anders Piniesjö'; cr;
       show: 'Part 1: ';
       show: self part1; cr;
       show: 'Part 2: ';
