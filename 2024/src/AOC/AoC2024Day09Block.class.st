@@ -44,7 +44,7 @@ AoC2024Day09Block >> moved [
 
 { #category : 'accessing' }
 AoC2024Day09Block >> moved: aMoved [
-    moved := aMoved
+    ^ moved
 ]
 
 { #category : 'accessing' }

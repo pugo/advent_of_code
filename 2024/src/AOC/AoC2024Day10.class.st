@@ -113,7 +113,7 @@ AoC2024Day10 >> part2 [
 AoC2024Day10 >> run [
 	Transcript
    		cr;cr;
-      show: '2024 Day 9 - by Anders Piniesjö'; cr;
+      show: '2024 Day 10 - by Anders Piniesjö'; cr;
       show: 'Part 1: ';
       show: self part1; cr;
       show: 'Part 2: ';

@@ -38,10 +38,24 @@ ManifestAOC class >> ruleLongMethodsRuleV1FalsePositive [
 ]
 
 { #category : 'code-critics' }
+ManifestAOC class >> ruleReCyclomaticComplexityRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGMethodDefinition #(#AoC2024Day12 #calcRegionFrom: #false)) #'2026-09-11T22:03:50.836867+02:00') #(#(#RGMethodDefinition #(#AoC2024Day12Plot #calcRegion: #false)) #'2026-09-11T22:42:48.400168+02:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAOC class >> ruleReGuardClauseRuleV1FalsePositive [
 
 	<ignoreForCoverage>
 	^ #(#(#(#RGMethodDefinition #(#AoC2024Day09 #part1 #false)) #'2026-09-08T00:14:09.56696+02:00') #(#(#RGClassDefinition #(#AoC2024Day09)) #'2026-09-08T00:25:14.9109+02:00') )
+]
+
+{ #category : 'code-critics' }
+ManifestAOC class >> ruleReTemporaryNeitherReadNorWrittenRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGClassDefinition #(#AoC2024Day12)) #'2026-09-11T22:34:01.357072+02:00') )
 ]
 
 { #category : 'code-critics' }
